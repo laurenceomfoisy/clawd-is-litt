@@ -178,3 +178,100 @@ def add_paper(
                 Path(attachment_temp_path).unlink(missing_ok=True)
 
     return item_key
+
+def add_paper_to_group(metadata_dict, pdf_path=None, group_id="5120604", config_path=None):
+    """Add paper to CLESSN group library with proper metadata formatting"""
+    import os
+    import re
+    import requests
+    
+    config = _read_zotero_config(config_path)
+    api_key = config["api_key"]
+    
+    # Create item with PROPER author formatting (using _author_creators helper)
+    item_data = {
+        "itemType": "journalArticle",
+        "title": metadata_dict.get("title", ""),
+        "creators": _author_creators(metadata_dict.get("authors", [])),  # FIX: Use proper firstName/lastName
+        "date": str(metadata_dict.get("year", "")),
+        "DOI": metadata_dict.get("doi", ""),
+        "url": metadata_dict.get("url", ""),
+        "abstractNote": metadata_dict.get("snippet", ""),
+        "extra": f"Citations: {metadata_dict.get('citations', 0)}"
+    }
+    
+    # POST to Zotero API
+    response = requests.post(
+        f"https://api.zotero.org/groups/{group_id}/items",
+        headers={
+            "Zotero-API-Key": api_key,
+            "Content-Type": "application/json"
+        },
+        json=[item_data]
+    )
+    
+    if response.status_code not in (200, 201):
+        LOGGER.error(f"Failed to create item: {response.status_code} - {response.text}")
+        return None
+    
+    # Extract item key
+    result = response.json()
+    item_key = result.get("successful", {}).get("0", {}).get("key")
+    
+    if not item_key:
+        LOGGER.error("Could not extract item key from response")
+        return None
+    
+    LOGGER.info(f"✅ Added to CLESSN: {item_key} - {metadata_dict.get('title', '')[:50]}...")
+    
+    # Attach PDF if provided
+    if pdf_path and os.path.exists(pdf_path):
+        pdf_file = Path(pdf_path)
+        
+        # Upload file attachment
+        with open(pdf_file, 'rb') as f:
+            pdf_data = f.read()
+        
+        # Create attachment item
+        attach_data = {
+            "itemType": "attachment",
+            "parentItem": item_key,
+            "linkMode": "imported_file",
+            "contentType": "application/pdf",
+            "filename": pdf_file.name
+        }
+        
+        # Register attachment
+        response_attach = requests.post(
+            f"https://api.zotero.org/groups/{group_id}/items",
+            headers={
+                "Zotero-API-Key": api_key,
+                "Content-Type": "application/json"
+            },
+            json=[attach_data]
+        )
+        
+        if response_attach.status_code in (200, 201):
+            result_attach = response_attach.json()
+            attach_key = result_attach.get("successful", {}).get("0", {}).get("key")
+            
+            if attach_key:
+                # Upload actual file content
+                response_upload = requests.post(
+                    f"https://api.zotero.org/groups/{group_id}/items/{attach_key}/file",
+                    headers={
+                        "Zotero-API-Key": api_key,
+                        "Content-Type": "application/pdf",
+                        "If-None-Match": "*"
+                    },
+                    data=pdf_data
+                )
+                
+                if response_upload.status_code == 204:
+                    LOGGER.info(f"📎 Attached PDF to item {item_key}")
+                else:
+                    LOGGER.warning(f"Failed to upload PDF content: {response_upload.status_code}")
+        else:
+            LOGGER.warning(f"Failed to create attachment: {response_attach.status_code}")
+    
+    return item_key

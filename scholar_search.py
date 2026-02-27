@@ -44,7 +44,10 @@ def _extract_year(authors_blob: str) -> Optional[int]:
 
 
 def _extract_authors(authors_blob: str) -> List[str]:
-    segment = authors_blob.split(" - ", 1)[0]
+    # Scholar format: "Authors\xa0- Publication, Year - Domain"
+    # Extract only the authors segment (before first "\xa0-" or " - ")
+    # Handle both regular space and non-breaking space
+    segment = re.split(r'[\xa0\s]-', authors_blob, maxsplit=1)[0]
     return [author.strip() for author in segment.split(",") if author.strip()]
 
 
