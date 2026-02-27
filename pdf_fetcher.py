@@ -10,9 +10,10 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from doi_utils import normalize_doi, is_valid_doi
+
 
 LOGGER = logging.getLogger(__name__)
-DOI_PATTERN = re.compile(r"10\.\d{4,}/\S+", re.IGNORECASE)
 DEFAULT_CONFIG = Path(__file__).with_name("config.yaml")
 
 
@@ -45,10 +46,6 @@ def _load_config(config_path: Optional[str] = None) -> dict:
         raise FileNotFoundError(f"Config file not found: {cfg_path}")
     with cfg_path.open("r", encoding="utf-8") as config_file:
         return yaml.safe_load(config_file) or {}
-
-
-def _is_valid_doi(doi: Optional[str]) -> bool:
-    return bool(doi and DOI_PATTERN.fullmatch(doi.strip()))
 
 
 def _safe_filename(title: str, doi: str) -> str:
@@ -192,9 +189,10 @@ def fetch_pdf(doi: str, title: str, config_path: Optional[str] = None) -> Tuple[
     Returns:
         Tuple[pdf_path, source] or (None, None) when retrieval fails.
     """
-    cleaned_doi = (doi or "").strip()
-    if not _is_valid_doi(cleaned_doi):
-        LOGGER.info("Skipping invalid DOI: %s", cleaned_doi)
+    # Normalize and validate DOI
+    cleaned_doi = normalize_doi(doi)
+    if not cleaned_doi or not is_valid_doi(cleaned_doi):
+        LOGGER.info("Skipping invalid DOI: %s (original: %s)", cleaned_doi, doi)
         return None, None
 
     config = _load_config(config_path)

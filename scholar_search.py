@@ -10,9 +10,10 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from doi_utils import normalize_doi
+
 
 LOGGER = logging.getLogger(__name__)
-DOI_PATTERN = re.compile(r"10\.\d{4,}/\S+", re.IGNORECASE)
 
 
 def _build_session() -> requests.Session:
@@ -52,12 +53,14 @@ def _extract_authors(authors_blob: str) -> List[str]:
 
 
 def _extract_doi(*candidates: str) -> Optional[str]:
+    """Extract and normalize DOI from candidate strings"""
     for value in candidates:
         if not value:
             continue
-        match = DOI_PATTERN.search(value)
-        if match:
-            return match.group(0).rstrip(".,;)")
+        # Use the new DOI normalization utility
+        normalized = normalize_doi(value)
+        if normalized:
+            return normalized
     return None
 
 
