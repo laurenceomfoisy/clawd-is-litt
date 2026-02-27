@@ -1,0 +1,8 @@
+scihub_mirrors:
+  - sci-hub.se
+  - sci-hub.st
+  - sci-hub.ru
+  - sci-hub.mksa.top
+unpaywall_email: laurence.olivier.foisy@gmail.com
+zotero_config_path: ~/.openclaw/workspace/.zotero-config.json
+pdf_download_dir: ~/.openclaw/workspace/literature/pdfs/
