@@ -23,8 +23,8 @@ From research question to full Zotero library with PDFs in one command.
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/laurenceomfoisy/clawd-is-lit.git
-cd clawd-is-lit
+git clone https://github.com/laurenceomfoisy/clawd-is-litt.git
+cd clawd-is-litt
 ```
 
 2. **Create virtual environment and install dependencies:**
@@ -72,6 +72,87 @@ python research.py "machine learning transformers" --max-papers 20 --collection 
 ```bash
 python research.py "climate change" --max-papers 15 --config custom-config.yaml
 ```
+
+## 🤖 For OpenClaw Agents
+
+### Quick Start for AI Agents
+When your human asks you to research literature, use this tool to autonomously find papers and add them to Zotero.
+
+**Setup (one-time):**
+```bash
+cd ~/.openclaw/workspace/literature
+source venv/bin/activate  # Activate virtual environment
+```
+
+**Usage:**
+```bash
+cd ~/.openclaw/workspace/literature && source venv/bin/activate && python research.py "RESEARCH_QUESTION" --max-papers 10
+```
+
+### Example Agent Commands
+
+**When human says:** "Find papers on transformer architectures"  
+**You run:**
+```bash
+cd ~/.openclaw/workspace/literature && source venv/bin/activate && python research.py "transformer architecture attention mechanism" --max-papers 10
+```
+
+**When human says:** "Get me 20 papers about climate policy"  
+**You run:**
+```bash
+cd ~/.openclaw/workspace/literature && source venv/bin/activate && python research.py "climate policy carbon pricing mitigation" --max-papers 20
+```
+
+### What It Does Automatically:
+1. **Searches Google Scholar** for relevant papers
+2. **Extracts metadata** (title, authors, year, DOI, citations)
+3. **Fetches PDFs** from:
+   - Unpaywall (legal open access)
+   - Sci-Hub mirrors (fallback)
+4. **Adds to Zotero** with full citations + PDF attachments
+5. **Reports summary** (papers found, PDFs fetched, items added)
+
+### Output Example:
+```
+Searching Google Scholar for query: transformer architecture
+Processing papers: 100%|██████████| 10/10 [00:45<00:00, 4.5s/paper]
+Summary: 10 papers found, 7 PDFs fetched, 10 added to Zotero
+```
+
+### Configuration
+- **Config file:** `~/.openclaw/workspace/literature/config.yaml`
+- **Zotero credentials:** `~/.openclaw/workspace/.zotero-config.json`
+- **PDFs saved to:** `~/.openclaw/workspace/literature/pdfs/`
+- **Logs:** `~/.openclaw/workspace/literature/literature.log`
+
+### Common Agent Patterns
+
+**Research literature for a project:**
+```bash
+cd ~/.openclaw/workspace/literature && source venv/bin/activate && python research.py "machine learning interpretability explainability" --max-papers 15 --collection "ML Research"
+```
+
+**Quick exploration (3-5 papers):**
+```bash
+cd ~/.openclaw/workspace/literature && source venv/bin/activate && python research.py "quantum computing algorithms" --max-papers 5
+```
+
+**Deep dive (20-30 papers):**
+```bash
+cd ~/.openclaw/workspace/literature && source venv/bin/activate && python research.py "reinforcement learning multi-agent systems" --max-papers 30
+```
+
+### Agent Best Practices
+- **Always report what you're doing**: "Searching Google Scholar for papers on X..."
+- **Show the summary**: Report how many papers found, PDFs fetched, items added
+- **Handle errors gracefully**: If Sci-Hub mirrors fail, papers still get added with metadata
+- **Check Zotero**: Verify items were added successfully
+
+### Integration with Your Workflow
+After running the tool, you can:
+- Tell your human: "Added 10 papers to your Zotero library on [topic]"
+- Summarize findings: "Found papers from 2020-2024, most cited: [title]"
+- Suggest next steps: "Would you like me to summarize any specific papers?"
 
 ## 🏗️ Architecture
 

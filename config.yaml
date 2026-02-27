@@ -3,6 +3,6 @@ scihub_mirrors:
   - sci-hub.st
   - sci-hub.ru
   - sci-hub.mksa.top
-unpaywall_email: laurence.olivier.foisy@gmail.com
+unpaywall_email: your-email@example.com
 zotero_config_path: ~/.openclaw/workspace/.zotero-config.json
 pdf_download_dir: ~/.openclaw/workspace/literature/pdfs/
